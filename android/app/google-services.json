@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "670622265379",
+    "project_id": "firebase-notes-freecodecamp",
+    "storage_bucket": "firebase-notes-freecodecamp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:670622265379:android:de2fb7cffea7e6cb91c196",
+        "android_client_info": {
+          "package_name": "com.example.mynotes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBc6pRAYVI-vBLPrfi07b8Nvn2-9DM5ysY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
