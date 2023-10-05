@@ -13,16 +13,23 @@ class _RegisterState extends State<Register> {
 
   late final TextEditingController _email;
   late final TextEditingController _password;
-  late final _firebaseService;
+  late final FirebaseService _firebaseService;
+  bool _loading = false;
+
 
   void register() async {
+    setState(() {
+      _loading = true;
+    });
     final email = _email.text;
     final password = _password.text;
     FirebaseUser? user = await _firebaseService.createUser(email, password);
     if(user != null) {
-      print(user.email);
-      print(user.uid);
+      Navigator.of(context).pushReplacementNamed('/login');
     }
+    setState(() {
+      _loading = false;
+    });
   }
 
   @override
@@ -46,7 +53,8 @@ class _RegisterState extends State<Register> {
       appBar: AppBar(
         title: const Text("Register My Notes"),
       ),
-      body: Column(
+      body: _loading? const Center(child: CircularProgressIndicator(),):
+      Column(
         children: [
           TextField(
             controller: _email,
@@ -67,10 +75,16 @@ class _RegisterState extends State<Register> {
             ),
           ),
           TextButton(
-            onPressed: ()  {
+            onPressed: () async {
               register();
             },
-            child: const Text('Register'),
+            child: const Text('Register', style: TextStyle(fontSize: 18),),
+          ),
+          TextButton(
+            onPressed: ()  {
+              Navigator.of(context).pushReplacementNamed('/login');
+            },
+            child: const Text('Already Registered & Verified? Login', style: TextStyle(fontSize: 18),),
           ),
         ],
       ),

@@ -1,0 +1,200 @@
+[1mdiff --git a/lib/firebase/firebase_service.dart b/lib/firebase/firebase_service.dart[m
+[1mindex 5ba763d..6d1922a 100644[m
+[1m--- a/lib/firebase/firebase_service.dart[m
+[1m+++ b/lib/firebase/firebase_service.dart[m
+[36m@@ -12,6 +12,8 @@[m [mclass FirebaseService {[m
+     try {[m
+       final userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);[m
+       final user = userCredential.user;[m
+[32m+[m[32m      user?.sendEmailVerification();[m
+[32m+[m[32m      // print(user);[m
+       return makeUser(user!);[m
+     }catch(e) {[m
+       return null;[m
+[36m@@ -20,11 +22,18 @@[m [mclass FirebaseService {[m
+ [m
+   Future<FirebaseUser?> loginUser(String email, String password) async {[m
+     try {[m
+[31m-      final userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);[m
+[32m+[m[32m      final userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);[m
+       final user = userCredential.user;[m
+[32m+[m[32m      bool isVerified = user?.emailVerified ?? false;[m
+[32m+[m[32m      if(!isVerified) return null;[m
+[32m+[m[32m      // print(user);[m
+       return makeUser(user!);[m
+     }catch(e) {[m
+       return null;[m
+     }[m
+   }[m
+[32m+[m
+[32m+[m[32m  Future<void> logOut() async {[m
+[32m+[m[32m    await _auth.signOut();[m
+[32m+[m[32m  }[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/lib/firebase/firebase_user_model.dart b/lib/firebase/firebase_user_model.dart[m
+[1mindex 686ff42..10b9e38 100644[m
+[1m--- a/lib/firebase/firebase_user_model.dart[m
+[1m+++ b/lib/firebase/firebase_user_model.dart[m
+[36m@@ -1,5 +1,6 @@[m
+ class FirebaseUser {[m
+   late final email;[m
+   late final uid;[m
+[32m+[m
+   FirebaseUser(this.email, this.uid);[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/lib/main.dart b/lib/main.dart[m
+[1mindex 47b87d3..3ef20d7 100644[m
+[1m--- a/lib/main.dart[m
+[1m+++ b/lib/main.dart[m
+[36m@@ -1,17 +1,24 @@[m
+ import 'package:firebase_core/firebase_core.dart';[m
+ import 'package:flutter/material.dart';[m
+[32m+[m[32mimport 'package:mynotes/views/login_view.dart';[m
+[32m+[m[32mimport 'package:mynotes/views/notes_view.dart';[m
+ import 'package:mynotes/views/register_view.dart';[m
+ import '../firebase_options.dart';[m
+ [m
+[31m-Future main() async {[m
+[32m+[m[32mFuture<void> main() async {[m
+   WidgetsFlutterBinding.ensureInitialized();[m
+   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);[m
+   runApp(MaterialApp([m
+[32m+[m[32m    routes: {[m
+[32m+[m[32m      '/login': (context) => const Login(),[m
+[32m+[m[32m      '/register': (context) => const Register(),[m
+[32m+[m[32m      '/notes_view': (context) => const NotesView(),[m
+[32m+[m[32m    },[m
+     debugShowCheckedModeBanner: false,[m
+     title: 'Flutter Demo',[m
+     theme: ThemeData([m
+       primarySwatch: Colors.blue,[m
+     ),[m
+[31m-    home: const Register(),[m
+[32m+[m[32m    home: const Login(),[m
+   ));[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/lib/views/login_view.dart b/lib/views/login_view.dart[m
+[1mindex d23a9f7..c713c89 100644[m
+[1m--- a/lib/views/login_view.dart[m
+[1m+++ b/lib/views/login_view.dart[m
+[36m@@ -14,15 +14,21 @@[m [mclass _LoginState extends State<Login> {[m
+   late final TextEditingController _email;[m
+   late final TextEditingController _password;[m
+   late final FirebaseService _firebaseService;[m
+[32m+[m[32m  bool _loading = false;[m
+ [m
+   void login() async {[m
+[32m+[m[32m    setState(() {[m
+[32m+[m[32m      _loading = true;[m
+[32m+[m[32m    });[m
+     final email = _email.text;[m
+     final password = _password.text;[m
+[31m-    FirebaseUser? user = await _firebaseService.createUser(email, password);[m
+[32m+[m[32m    FirebaseUser? user = await _firebaseService.loginUser(email, password);[m
+     if(user != null) {[m
+[31m-      // print(user.email);[m
+[31m-      // print(user.uid);[m
+[32m+[m[32m      Navigator.of(context).pushReplacementNamed('/notes_view');[m
+     }[m
+[32m+[m[32m    setState(() {[m
+[32m+[m[32m      _loading = false;[m
+[32m+[m[32m    });[m
+   }[m
+ [m
+   @override[m
+[36m@@ -46,7 +52,8 @@[m [mclass _LoginState extends State<Login> {[m
+       appBar: AppBar([m
+         title: const Text("Login My Notes"),[m
+       ),[m
+[31m-      body: Column([m
+[32m+[m[32m      body: _loading? const Center(child: CircularProgressIndicator(),):[m
+[32m+[m[32m      Column([m
+         children: [[m
+           TextField([m
+             controller: _email,[m
+[36m@@ -66,11 +73,19 @@[m [mclass _LoginState extends State<Login> {[m
+               hintText: 'Enter your password here ..',[m
+             ),[m
+           ),[m
+[32m+[m[32m          const SizedBox(height: 30.0,),[m
+[32m+[m[32m          const Text("Make sure to verify your email"),[m
+           TextButton([m
+[31m-            onPressed: ()  {[m
+[32m+[m[32m            onPressed: () {[m
+               login();[m
+             },[m
+[31m-            child: const Text('Login'),[m
+[32m+[m[32m            child: const Text('Login', style: TextStyle(fontSize: 18),),[m
+[32m+[m[32m          ),[m
+[32m+[m[32m          TextButton([m
+[32m+[m[32m            onPressed: ()  {[m
+[32m+[m[32m              Navigator.of(context).pushReplacementNamed('/register');[m
+[32m+[m[32m            },[m
+[32m+[m[32m            child: const Text('Not Registered? Register', style: TextStyle(fontSize: 18),),[m
+           ),[m
+         ],[m
+       ),[m
+[1mdiff --git a/lib/views/register_view.dart b/lib/views/register_view.dart[m
+[1mindex 515411d..32ca822 100644[m
+[1m--- a/lib/views/register_view.dart[m
+[1m+++ b/lib/views/register_view.dart[m
+[36m@@ -13,16 +13,23 @@[m [mclass _RegisterState extends State<Register> {[m
+ [m
+   late final TextEditingController _email;[m
+   late final TextEditingController _password;[m
+[31m-  late final _firebaseService;[m
+[32m+[m[32m  late final FirebaseService _firebaseService;[m
+[32m+[m[32m  bool _loading = false;[m
+[32m+[m
+ [m
+   void register() async {[m
+[32m+[m[32m    setState(() {[m
+[32m+[m[32m      _loading = true;[m
+[32m+[m[32m    });[m
+     final email = _email.text;[m
+     final password = _password.text;[m
+     FirebaseUser? user = await _firebaseService.createUser(email, password);[m
+     if(user != null) {[m
+[31m-      print(user.email);[m
+[31m-      print(user.uid);[m
+[32m+[m[32m      Navigator.of(context).pushReplacementNamed('/login');[m
+     }[m
+[32m+[m[32m    setState(() {[m
+[32m+[m[32m      _loading = false;[m
+[32m+[m[32m    });[m
+   }[m
+ [m
+   @override[m
+[36m@@ -46,7 +53,8 @@[m [mclass _RegisterState extends State<Register> {[m
+       appBar: AppBar([m
+         title: const Text("Register My Notes"),[m
+       ),[m
+[31m-      body: Column([m
+[32m+[m[32m      body: _loading? const Center(child: CircularProgressIndicator(),):[m
+[32m+[m[32m      Column([m
+         children: [[m
+           TextField([m
+             controller: _email,[m
+[36m@@ -67,10 +75,16 @@[m [mclass _RegisterState extends State<Register> {[m
+             ),[m
+           ),[m
+           TextButton([m
+[31m-            onPressed: ()  {[m
+[32m+[m[32m            onPressed: () async {[m
+               register();[m
+             },[m
+[31m-            child: const Text('Register'),[m
+[32m+[m[32m            child: const Text('Register', style: TextStyle(fontSize: 18),),[m
+[32m+[m[32m          ),[m
+[32m+[m[32m          TextButton([m
+[32m+[m[32m            onPressed: ()  {[m
+[32m+[m[32m              Navigator.of(context).pushReplacementNamed('/login');[m
+[32m+[m[32m            },[m
+[32m+[m[32m            child: const Text('Already Registered & Verified? Login', style: TextStyle(fontSize: 18),),[m
+           ),[m
+         ],[m
+       ),[m

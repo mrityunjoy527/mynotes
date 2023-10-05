@@ -12,6 +12,8 @@ class FirebaseService {
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       final user = userCredential.user;
+      user?.sendEmailVerification();
+      // print(user);
       return makeUser(user!);
     }catch(e) {
       return null;
@@ -20,11 +22,18 @@ class FirebaseService {
 
   Future<FirebaseUser?> loginUser(String email, String password) async {
     try {
-      final userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      final userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
       final user = userCredential.user;
+      bool isVerified = user?.emailVerified ?? false;
+      if(!isVerified) return null;
+      // print(user);
       return makeUser(user!);
     }catch(e) {
       return null;
     }
+  }
+
+  Future<void> logOut() async {
+    await _auth.signOut();
   }
 }
