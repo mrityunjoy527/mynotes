@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/firebase/firebase_service.dart';
 import 'package:mynotes/firebase/firebase_user_model.dart';
 
@@ -25,7 +26,7 @@ class _RegisterState extends State<Register> {
     final password = _password.text;
     FirebaseUser? user = await _firebaseService.createUser(email, password);
     if(user != null) {
-      Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.of(context).pushReplacementNamed(loginRoute);
     }
     setState(() {
       _loading = false;
@@ -82,7 +83,7 @@ class _RegisterState extends State<Register> {
           ),
           TextButton(
             onPressed: ()  {
-              Navigator.of(context).pushReplacementNamed('/login');
+              Navigator.of(context).pushReplacementNamed(loginRoute);
             },
             child: const Text('Already Registered & Verified? Login', style: TextStyle(fontSize: 18),),
           ),

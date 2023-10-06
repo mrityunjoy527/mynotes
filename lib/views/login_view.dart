@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/firebase/firebase_service.dart';
 import 'package:mynotes/firebase/firebase_user_model.dart';
+// import 'dart:developer' as devtools show log;
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -24,7 +26,7 @@ class _LoginState extends State<Login> {
     final password = _password.text;
     FirebaseUser? user = await _firebaseService.loginUser(email, password);
     if(user != null) {
-      Navigator.of(context).pushReplacementNamed('/notes_view');
+      Navigator.of(context).pushReplacementNamed(notesRoute);
     }
     setState(() {
       _loading = false;
@@ -83,7 +85,7 @@ class _LoginState extends State<Login> {
           ),
           TextButton(
             onPressed: ()  {
-              Navigator.of(context).pushReplacementNamed('/register');
+              Navigator.of(context).pushReplacementNamed(registerRoute);
             },
             child: const Text('Not Registered? Register', style: TextStyle(fontSize: 18),),
           ),
@@ -91,4 +93,23 @@ class _LoginState extends State<Login> {
       ),
     );
   }
+}
+
+Future<void> showErrorDialog(BuildContext context, String text) {
+  return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('An error occured'),
+          content: Text(text),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+            ),
+          ],
+        );
+      });
 }

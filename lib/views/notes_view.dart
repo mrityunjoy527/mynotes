@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mynotes/constants/routes.dart';
 
 import '../firebase/firebase_service.dart';
 
@@ -29,7 +30,7 @@ class _NotesViewState extends State<NotesView> {
               final wantLogout = await showAlertDialog(context);
               if(wantLogout) {
                 await _firebaseService.logOut();
-                Navigator.of(context).pushReplacementNamed('/login');
+                Navigator.of(context).pushReplacementNamed(loginRoute);
               }
             },
             itemBuilder: (context) {
