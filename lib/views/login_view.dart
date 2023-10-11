@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
-import 'package:mynotes/firebase/firebase_service.dart';
-import 'package:mynotes/firebase/firebase_user_model.dart';
+import 'package:mynotes/services/auth/auth_exceptions.dart';
+import 'package:mynotes/services/auth/auth_service.dart';
 // import 'dart:developer' as devtools show log;
 
 class Login extends StatefulWidget {
@@ -12,30 +12,13 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-
   late final TextEditingController _email;
   late final TextEditingController _password;
-  late final FirebaseService _firebaseService;
-  bool _loading = false;
-
-  void login() async {
-    setState(() {
-      _loading = true;
-    });
-    final email = _email.text;
-    final password = _password.text;
-    FirebaseUser? user = await _firebaseService.loginUser(email, password);
-    if(user != null) {
-      Navigator.of(context).pushReplacementNamed(notesRoute);
-    }
-    setState(() {
-      _loading = false;
-    });
-  }
+  late bool _loading;
 
   @override
   void initState() {
-    _firebaseService = FirebaseService();
+    _loading = false;
     _email = TextEditingController();
     _password = TextEditingController();
     super.initState();
@@ -54,8 +37,11 @@ class _LoginState extends State<Login> {
       appBar: AppBar(
         title: const Text("Login My Notes"),
       ),
-      body: _loading? const Center(child: CircularProgressIndicator(),):
-      Column(
+      body: _loading
+          ? const Center(
+        child: CircularProgressIndicator(),
+      )
+          : Column(
         children: [
           TextField(
             controller: _email,
@@ -75,19 +61,66 @@ class _LoginState extends State<Login> {
               hintText: 'Enter your password here ..',
             ),
           ),
-          const SizedBox(height: 30.0,),
-          const Text("Make sure to verify your email"),
-          TextButton(
-            onPressed: () {
-              login();
-            },
-            child: const Text('Login', style: TextStyle(fontSize: 18),),
+          const SizedBox(
+            height: 30.0,
           ),
           TextButton(
-            onPressed: ()  {
+            onPressed: () async {
+              setState(() {
+                _loading = true;
+              });
+              try {
+                final email = _email.text;
+                final password = _password.text;
+                await AuthService.firebase().login(
+                  email: email,
+                  password: password,
+                );
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    notesRoute, (route) => false);
+                setState(() {
+                  _loading = false;
+                });
+              } on EmailNotVerifiedAuthException {
+                await showErrorDialog(context, 'Email Not Verified');
+                setState(() {
+                  _loading = false;
+                });
+              } on UserNotLoggedInAuthException {
+                await showErrorDialog(context, 'User Not Logged In');
+                setState(() {
+                  _loading = false;
+                });
+              } on UserNotFoundAuthException {
+                await showErrorDialog(context, 'User Not Found, Please Register');
+                setState(() {
+                  _loading = false;
+                });
+              } on WrongPasswordAuthException {
+                await showErrorDialog(context, 'Wrong Password');
+                setState(() {
+                  _loading = false;
+                });
+              } on GenericAuthException catch (e) {
+                await showErrorDialog(context, 'Something Went Wrong');
+                setState(() {
+                  _loading = false;
+                });
+              }
+            },
+            child: const Text(
+              'Login',
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
               Navigator.of(context).pushReplacementNamed(registerRoute);
             },
-            child: const Text('Not Registered? Register', style: TextStyle(fontSize: 18),),
+            child: const Text(
+              'Not Registered',
+              style: TextStyle(fontSize: 18),
+            ),
           ),
         ],
       ),
@@ -100,16 +133,17 @@ Future<void> showErrorDialog(BuildContext context, String text) {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('An error occured'),
+          title: const Text('An Error Occurred'),
           content: Text(text),
           actions: [
             TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
             ),
           ],
         );
-      });
+      }
+  );
 }

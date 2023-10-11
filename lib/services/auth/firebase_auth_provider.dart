@@ -1,16 +1,21 @@
 import 'package:mynotes/services/auth/auth_provider.dart';
 import 'package:mynotes/services/auth/auth_user.dart';
-import 'auth_exceptions.dart';
+import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth, FirebaseAuthException;
+// import 'dart:developer' show log;
 
 class FirebaseAuthProvider implements AuthProvider {
+
+
   @override
   Future<AuthUser> createUser({required String email, required String password}) async {
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
-      final user = currentUser;
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
+      final user = userCredential.user;
       if(user != null) {
-        return user;
+        await sendEmailVerification();
+        // log('verification sent');
+        return AuthUser.fromFirebase(user);
       }else {
         throw UserNotLoggedInAuthException();
       }
@@ -29,14 +34,6 @@ class FirebaseAuthProvider implements AuthProvider {
     }
   }
 
-  @override
-  AuthUser? get currentUser {
-    final user = FirebaseAuth.instance.currentUser;
-    if(user != null) {
-      AuthUser.fromFirebase(user);
-    }
-    return null;
-  }
 
   @override
   Future<void> logOut() async {
@@ -51,10 +48,11 @@ class FirebaseAuthProvider implements AuthProvider {
   @override
   Future<AuthUser> login({required String email, required String password}) async {
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-      final user = currentUser;
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+      final user = userCredential.user;
       if(user != null) {
-        return user;
+        if(!user.emailVerified) throw EmailNotVerifiedAuthException();
+        return AuthUser.fromFirebase(user);
       }else {
         throw UserNotLoggedInAuthException();
       }

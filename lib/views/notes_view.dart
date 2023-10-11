@@ -28,7 +28,7 @@ class _NotesViewState extends State<NotesView> {
           PopupMenuButton<MenuAction>(
             onSelected: (val) async {
               final wantLogout = await showAlertDialog(context);
-              if(wantLogout) {
+              if (wantLogout) {
                 await _firebaseService.logOut();
                 Navigator.of(context).pushReplacementNamed(loginRoute);
               }
@@ -60,21 +60,18 @@ Future<bool> showAlertDialog(BuildContext context) async {
             TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(false);
-            },
+                },
                 child: const Text('Cancel')),
             TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(true);
-            },
+                },
                 child: const Text('Yes')),
           ],
           title: const Text('Log out'),
           content: const Text('Do you really want to log out ?'),
         );
-      }
-    ).then((value) => value ?? false);
+      }).then((value) => value ?? false);
 }
 
-enum MenuAction {
-  logout
-}
+enum MenuAction { logout }
