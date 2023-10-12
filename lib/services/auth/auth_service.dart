@@ -14,8 +14,8 @@ class AuthService implements AuthProvider {
       {required String email, required String password}) =>
       provider.createUser(email: email, password: password);
 
-  // @override
-  // AuthUser? get currentUser => provider.currentUser;
+  @override
+  AuthUser? get currentUser => provider.currentUser;
 
   @override
   Future<void> logOut() => provider.logOut();
