@@ -5,6 +5,7 @@ import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/services/crud/notes_service.dart';
 import 'package:mynotes/utilities/dialogs/show_logout_dialog.dart';
 import 'package:mynotes/views/notes/notes_list_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotesView extends StatefulWidget {
   const NotesView({super.key});
@@ -32,7 +33,7 @@ class _NotesViewState extends State<NotesView> {
           actions: [
             IconButton(
               onPressed: () {
-                Navigator.of(context).pushNamed(newNoteRoute);
+                Navigator.of(context).pushNamed(createOrUpdateNoteRoute);
               },
               icon: const Icon(Icons.add),
             ),
@@ -42,6 +43,8 @@ class _NotesViewState extends State<NotesView> {
                   context,
                 );
                 if (wantLogout) {
+                  final sharedPreference = await SharedPreferences.getInstance();
+                  sharedPreference.remove('userEmail');
                   await AuthService.firebase().logOut();
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     loginRoute,
@@ -77,6 +80,9 @@ class _NotesViewState extends State<NotesView> {
                             notes: allNotes,
                             onDelete: (note) async {
                               await _notesService.deleteNote(id: note.id);
+                            },
+                            onTap: (note) {
+                              Navigator.of(context).pushNamed(createOrUpdateNoteRoute, arguments: note);
                             },
                           );
                         } else {

@@ -2,6 +2,7 @@ import 'package:mynotes/services/auth/auth_provider.dart';
 import 'package:mynotes/services/auth/auth_user.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth, FirebaseAuthException;
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'dart:developer' show log;
 
 class FirebaseAuthProvider implements AuthProvider {
@@ -52,6 +53,8 @@ class FirebaseAuthProvider implements AuthProvider {
       final user = userCredential.user;
       if(user != null) {
         if(!user.emailVerified) throw EmailNotVerifiedAuthException();
+        final sharedPreference = await SharedPreferences.getInstance();
+        sharedPreference.setString('userEmail', user.email!);
         return AuthUser.fromFirebase(user);
       }else {
         throw UserNotLoggedInAuthException();
