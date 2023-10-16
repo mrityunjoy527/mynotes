@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
-import 'package:mynotes/utilities/show_error_dialog.dart';
+import 'package:mynotes/utilities/dialogs/show_error_dialog.dart';
 // import 'dart:developer' as devtools show log;
 
 class Login extends StatefulWidget {
@@ -102,7 +102,12 @@ class _LoginState extends State<Login> {
                 setState(() {
                   _loading = false;
                 });
-              } on GenericAuthException catch (e) {
+              }  on InvalidEmailAuthException {
+                await showErrorDialog(context, 'Invalid Email');
+                setState(() {
+                  _loading = false;
+                });
+              } on GenericAuthException {
                 await showErrorDialog(context, 'Something Went Wrong');
                 setState(() {
                   _loading = false;
