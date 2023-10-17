@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/services/crud/notes_service.dart';
-import 'package:mynotes/utilities/dialogs/generics/get_arguments.dart';
+import 'package:mynotes/utilities/dialogs/extensions/get_arguments.dart';
 
 class CreateOrUpdateNote extends StatefulWidget {
   const CreateOrUpdateNote({super.key});
@@ -51,7 +51,7 @@ class _CreateOrUpdateNoteState extends State<CreateOrUpdateNote> {
       return existingNote;
     }
     final currentUser = AuthService.firebase().currentUser!;
-    final email = currentUser.email!;
+    final email = currentUser.email;
     final owner = await _notesService.getUser(email: email);
     final newNote = await _notesService.createNote(owner: owner);
     _note = newNote;
