@@ -104,7 +104,7 @@ class _CreateOrUpdateNoteState extends State<CreateOrUpdateNote> {
                     hintText: 'Start typing your note...'),
               );
             default:
-              return const CircularProgressIndicator();
+              return const Center(child: CircularProgressIndicator());
           }
         },
       ),

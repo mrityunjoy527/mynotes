@@ -39,11 +39,15 @@ class HomePage extends StatelessWidget {
             options: DefaultFirebaseOptions.currentPlatform),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return const Center(child: CircularProgressIndicator());
             case ConnectionState.done:
               return FutureBuilder(
                 future: SharedPreferences.getInstance(),
                 builder: (context, snapshot) {
                   switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return const Center(child: CircularProgressIndicator());
                     case ConnectionState.done:
                       if (snapshot.hasData) {
                         final sh = snapshot.data;
