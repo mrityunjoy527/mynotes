@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:mynotes/utilities/dialogs/generic_dialog.dart';
 
-Future<void> showErrorDialog(
+Future<void> showCannotShareEmptyNote(
   BuildContext context,
-  String text,
 ) {
   return showGenericDialog<void>(
     context: context,
-    title: 'An Error Occurred',
-    content: text,
+    title: 'Sharing ...',
+    content: 'Can not share empty note!',
     optionsBuilder: () => {
       'OK': null,
     },

@@ -2,21 +2,22 @@ import 'package:flutter/material.dart';
 
 typedef DialogBuilder = Map<String, Object?> Function();
 
-Future<T?> showGenericDialog<T>(
-  BuildContext context,
-  String text,
-  DialogBuilder optionsBuilder,
-) {
+Future<T?> showGenericDialog<T>({
+  required BuildContext context,
+  required String title,
+  required String content,
+  required DialogBuilder optionsBuilder,
+}) {
   return showDialog(
     context: context,
     builder: (context) {
       final options = optionsBuilder();
       return AlertDialog(
-        title: const Text(
-          'An Error Occurred',
+        title: Text(
+          title
         ),
         content: Text(
-          text,
+          content,
         ),
         actions: options.keys.map((optionTitle) {
           return TextButton(
