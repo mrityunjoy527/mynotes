@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:mynotes/constants/routes.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
-import 'package:mynotes/services/auth/auth_service.dart';
+import 'package:mynotes/services/auth/bloc/auth_bloc.dart';
+import 'package:mynotes/services/auth/bloc/auth_event.dart';
+import 'package:mynotes/services/auth/bloc/auth_state.dart';
+import 'package:mynotes/utilities/dialogs/loading_dialog.dart';
 import 'package:mynotes/utilities/dialogs/show_error_dialog.dart';
-// import 'dart:developer' as devtools show log;
+import 'dart:developer' as devtools show log;
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -15,11 +18,9 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   late final TextEditingController _email;
   late final TextEditingController _password;
-  late bool _loading;
 
   @override
   void initState() {
-    _loading = false;
     _email = TextEditingController();
     _password = TextEditingController();
     super.initState();
@@ -34,101 +35,71 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login My Notes"),
-      ),
-      body: _loading
-          ? const Center(
-        child: CircularProgressIndicator(),
-      )
-          : Column(
-        children: [
-          TextField(
-            controller: _email,
-            enableSuggestions: false,
-            autocorrect: false,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              hintText: 'Enter your email here ..',
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) async {
+        if (state is AuthStateLoggedOut) {
+          switch (state.exception.runtimeType) {
+            case UserNotFoundAuthException:
+              await showErrorDialog(context, 'User not found');
+              break;
+            case WrongPasswordAuthException:
+              await showErrorDialog(context, 'Wrong Credentials');
+              break;
+            case GenericAuthException:
+              await showErrorDialog(context, 'Authentication error');
+              break;
+          }
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Login My Notes"),
+        ),
+        body: Column(
+          children: [
+            TextField(
+              controller: _email,
+              enableSuggestions: false,
+              autocorrect: false,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                hintText: 'Enter your email here ..',
+              ),
             ),
-          ),
-          TextField(
-            controller: _password,
-            obscureText: true,
-            enableSuggestions: false,
-            autocorrect: false,
-            decoration: const InputDecoration(
-              hintText: 'Enter your password here ..',
+            TextField(
+              controller: _password,
+              obscureText: true,
+              enableSuggestions: false,
+              autocorrect: false,
+              decoration: const InputDecoration(
+                hintText: 'Enter your password here ..',
+              ),
             ),
-          ),
-          const SizedBox(
-            height: 30.0,
-          ),
-          TextButton(
-            onPressed: () async {
-              setState(() {
-                _loading = true;
-              });
-              try {
+            const SizedBox(
+              height: 30.0,
+            ),
+            TextButton(
+              onPressed: () {
                 final email = _email.text;
                 final password = _password.text;
-                await AuthService.firebase().login(
-                  email: email,
-                  password: password,
-                );
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                    notesRoute, (route) => false);
-                setState(() {
-                  _loading = false;
-                });
-              } on EmailNotVerifiedAuthException {
-                await showErrorDialog(context, 'Email Not Verified');
-                setState(() {
-                  _loading = false;
-                });
-              } on UserNotLoggedInAuthException {
-                await showErrorDialog(context, 'User Not Logged In');
-                setState(() {
-                  _loading = false;
-                });
-              } on UserNotFoundAuthException {
-                await showErrorDialog(context, 'User Not Found, Please Register');
-                setState(() {
-                  _loading = false;
-                });
-              } on WrongPasswordAuthException {
-                await showErrorDialog(context, 'Wrong Password');
-                setState(() {
-                  _loading = false;
-                });
-              }  on InvalidEmailAuthException {
-                await showErrorDialog(context, 'Invalid Email');
-                setState(() {
-                  _loading = false;
-                });
-              } on GenericAuthException {
-                await showErrorDialog(context, 'Something Went Wrong');
-                setState(() {
-                  _loading = false;
-                });
-              }
-            },
-            child: const Text(
-              'Login',
-              style: TextStyle(fontSize: 18),
+                context.read<AuthBloc>().add(AuthEventLogIn(email, password));
+              },
+              child: const Text(
+                'Login',
+                style: TextStyle(fontSize: 18),
+              ),
             ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushReplacementNamed(registerRoute);
-            },
-            child: const Text(
-              'Not Registered',
-              style: TextStyle(fontSize: 18),
+            TextButton(
+              onPressed: () {
+                context.read<AuthBloc>().add(const AuthEventShouldRegister());
+              },
+              child: const Text(
+                'Not Registered Yet?',
+                style: TextStyle(fontSize: 18),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

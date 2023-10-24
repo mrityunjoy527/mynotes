@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mynotes/constants/routes.dart';
-import 'package:mynotes/services/auth/auth_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mynotes/services/auth/bloc/auth_bloc.dart';
+import 'package:mynotes/services/auth/bloc/auth_event.dart';
 
 class VerifyEmailView extends StatelessWidget {
   const VerifyEmailView({super.key});
@@ -38,7 +39,7 @@ class VerifyEmailView extends StatelessWidget {
             ),
             TextButton(
               onPressed: () async {
-                await AuthService.firebase().sendEmailVerification();
+                context.read<AuthBloc>().add(const AuthEventSendEmailVerification());
               },
               child: const Text(
                 'Send Verification Mail Again/Link Expired',
@@ -57,7 +58,8 @@ class VerifyEmailView extends StatelessWidget {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      context.read<AuthBloc>().add(const AuthEventShouldRegister());
+
                     },
                     child: const Text(
                       'Re-register',
@@ -68,7 +70,7 @@ class VerifyEmailView extends StatelessWidget {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pushNamed(loginRoute);
+                      context.read<AuthBloc>().add(const AuthEventLogOut());
                     },
                     child: const Text(
                       'Login',
