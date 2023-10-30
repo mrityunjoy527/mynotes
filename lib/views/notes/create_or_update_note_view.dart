@@ -105,23 +105,28 @@ class _CreateOrUpdateNoteState extends State<CreateOrUpdateNote> {
           ),
         ],
       ),
-      body: FutureBuilder(
-        future: createOrGetExistingNote(context),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              _setupTextControllerListener();
-              return TextField(
-                controller: _textController,
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                decoration: const InputDecoration(
-                    hintText: 'Start typing your note...'),
-              );
-            default:
-              return const Center(child: CircularProgressIndicator());
-          }
-        },
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: FutureBuilder(
+            future: createOrGetExistingNote(context),
+            builder: (context, snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.done:
+                  _setupTextControllerListener();
+                  return TextField(
+                    controller: _textController,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                    decoration: const InputDecoration(
+                        hintText: 'Start typing your note...'),
+                  );
+                default:
+                  return const Center(child: CircularProgressIndicator());
+              }
+            },
+          ),
+        ),
       ),
     );
   }

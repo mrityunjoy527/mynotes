@@ -4,9 +4,7 @@ import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/bloc/auth_bloc.dart';
 import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/services/auth/bloc/auth_state.dart';
-import 'package:mynotes/utilities/dialogs/loading_dialog.dart';
 import 'package:mynotes/utilities/dialogs/show_error_dialog.dart';
-import 'dart:developer' as devtools show log;
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -55,50 +53,69 @@ class _LoginState extends State<Login> {
         appBar: AppBar(
           title: const Text("Login My Notes"),
         ),
-        body: Column(
-          children: [
-            TextField(
-              controller: _email,
-              enableSuggestions: false,
-              autocorrect: false,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                hintText: 'Enter your email here ..',
-              ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  alignment: Alignment.topLeft,
+                  child: const Text('You can access your notes after you login'),
+                ),
+                TextField(
+                  autofocus: true,
+                  controller: _email,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your email here ..',
+                  ),
+                ),
+                TextField(
+                  controller: _password,
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your password here ..',
+                  ),
+                ),
+                const SizedBox(
+                  height: 30.0,
+                ),
+                TextButton(
+                  onPressed: () {
+                    final email = _email.text;
+                    final password = _password.text;
+                    context.read<AuthBloc>().add(AuthEventLogIn(email, password));
+                  },
+                  child: const Text(
+                    'Login',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    context.read<AuthBloc>().add(const AuthEventForgotPassword(null));
+                  },
+                  child: const Text(
+                    'Forgot Password?',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    context.read<AuthBloc>().add(const AuthEventShouldRegister());
+                  },
+                  child: const Text(
+                    'Not Registered Yet?',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
             ),
-            TextField(
-              controller: _password,
-              obscureText: true,
-              enableSuggestions: false,
-              autocorrect: false,
-              decoration: const InputDecoration(
-                hintText: 'Enter your password here ..',
-              ),
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-            TextButton(
-              onPressed: () {
-                final email = _email.text;
-                final password = _password.text;
-                context.read<AuthBloc>().add(AuthEventLogIn(email, password));
-              },
-              child: const Text(
-                'Login',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                context.read<AuthBloc>().add(const AuthEventShouldRegister());
-              },
-              child: const Text(
-                'Not Registered Yet?',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

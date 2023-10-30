@@ -56,7 +56,6 @@ class FirebaseAuthProvider implements AuthProvider {
   Future<AuthUser> login(
       {required String email, required String password}) async {
     try {
-      await Future.delayed(const Duration(seconds: 5));
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
       final user = currentUser;
@@ -98,5 +97,14 @@ class FirebaseAuthProvider implements AuthProvider {
       return AuthUser.fromFirebase(user);
     }
     return null;
+  }
+
+  @override
+  Future<void> sendPasswordResetLink({required String email}) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+    }catch(e) {
+      throw GenericAuthException();
+    }
   }
 }

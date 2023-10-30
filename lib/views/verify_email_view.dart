@@ -42,7 +42,7 @@ class VerifyEmailView extends StatelessWidget {
                 context.read<AuthBloc>().add(const AuthEventSendEmailVerification());
               },
               child: const Text(
-                'Send Verification Mail Again/Link Expired',
+                'Send Verification Mail Again',
                 style: TextStyle(
                   fontSize: 16,
                 ),
@@ -56,10 +56,9 @@ class VerifyEmailView extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ElevatedButton(
+                  TextButton(
                     onPressed: () {
                       context.read<AuthBloc>().add(const AuthEventShouldRegister());
-
                     },
                     child: const Text(
                       'Re-register',
@@ -68,7 +67,7 @@ class VerifyEmailView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  ElevatedButton(
+                  TextButton(
                     onPressed: () {
                       context.read<AuthBloc>().add(const AuthEventLogOut());
                     },

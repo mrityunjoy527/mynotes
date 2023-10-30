@@ -1,33 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/bloc/auth_bloc.dart';
 import 'package:mynotes/services/auth/bloc/auth_event.dart';
-import 'package:mynotes/services/auth/bloc/auth_state.dart';
 import 'package:mynotes/utilities/dialogs/show_error_dialog.dart';
+import 'package:mynotes/services/auth/bloc/auth_state.dart';
+import 'package:mynotes/utilities/dialogs/show_password_reset_link_sent_dialog.dart';
 
-class Register extends StatefulWidget {
-  const Register({super.key});
+class ForgotPassword extends StatefulWidget {
+  const ForgotPassword({super.key});
 
   @override
-  State<Register> createState() => _RegisterState();
+  State<ForgotPassword> createState() => _ForgotPasswordState();
 }
 
-class _RegisterState extends State<Register> {
+class _ForgotPasswordState extends State<ForgotPassword> {
   late final TextEditingController _email;
-  late final TextEditingController _password;
 
   @override
   void initState() {
     _email = TextEditingController();
-    _password = TextEditingController();
     super.initState();
   }
 
   @override
   void dispose() {
     _email.dispose();
-    _password.dispose();
     super.dispose();
   }
 
@@ -35,26 +32,25 @@ class _RegisterState extends State<Register> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
-        if (state is AuthStateRegistering) {
-          switch (state.exception.runtimeType) {
-            case WeakPasswordAuthException:
-              await showErrorDialog(context, 'Weak password');
-              break;
-            case EmailAlreadyInUseAuthException:
-              await showErrorDialog(context, 'Email is already in use');
-              break;
-            case GenericAuthException:
-              await showErrorDialog(context, 'Failed to register');
-              break;
-            case InvalidEmailAuthException:
-              await showErrorDialog(context, 'Invalid email');
-              break;
+        if (state is AuthStateForgotPassword) {
+          if (state.exception != null) {
+            await showErrorDialog(
+              context,
+              'Something went wrong!',
+            );
+            return;
+          }
+          if (state.hasSentEmail) {
+            _email.clear();
+            await showPasswordResetLinkSent(
+              context,
+            );
           }
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Register My Notes"),
+          title: const Text('Forgot Password'),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -63,25 +59,20 @@ class _RegisterState extends State<Register> {
               children: [
                 Container(
                   alignment: Alignment.topLeft,
-                  child: const Text('Create a profile to be able to store your notes'),
+                  child: const Text(
+                      "You'll receive a password recovery link in the entered email, after creating new password you can try to login"),
+                ),
+                const SizedBox(
+                  height: 30.0,
                 ),
                 TextField(
                   autofocus: true,
                   controller: _email,
-                  enableSuggestions: false,
-                  autocorrect: false,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter your email here ..',
-                  ),
-                ),
-                TextField(
-                  controller: _password,
-                  obscureText: true,
                   enableSuggestions: false,
                   autocorrect: false,
                   decoration: const InputDecoration(
-                    hintText: 'Enter your password here ..',
+                    hintText: 'Enter your profile email here...',
                   ),
                 ),
                 const SizedBox(
@@ -90,14 +81,13 @@ class _RegisterState extends State<Register> {
                 TextButton(
                   onPressed: () {
                     final email = _email.text;
-                    final password = _password.text;
-                    context
-                        .read<AuthBloc>()
-                        .add(AuthEventRegister(email, password));
+                    context.read<AuthBloc>().add(AuthEventForgotPassword(email));
                   },
                   child: const Text(
-                    'Register',
-                    style: TextStyle(fontSize: 18),
+                    'Send Password Reset Link',
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
                   ),
                 ),
                 TextButton(
@@ -105,8 +95,10 @@ class _RegisterState extends State<Register> {
                     context.read<AuthBloc>().add(const AuthEventLogOut());
                   },
                   child: const Text(
-                    'Already Registered ?',
-                    style: TextStyle(fontSize: 18),
+                    'Login',
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
                   ),
                 ),
               ],

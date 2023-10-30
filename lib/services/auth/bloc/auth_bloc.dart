@@ -4,8 +4,8 @@ import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/services/auth/bloc/auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc(AuthProvider provider) : super(const AuthStateUninitialized(isLoading: true)) {
-
+  AuthBloc(AuthProvider provider)
+      : super(const AuthStateUninitialized(isLoading: true)) {
     on<AuthEventShouldRegister>((event, emit) async {
       emit(const AuthStateRegistering(isLoading: false, exception: null));
     });
@@ -50,10 +50,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final user = await provider.login(email: email, password: password);
         if (!user.emailVerified) {
           emit(const AuthStateLoggedOut(
-            exception: null,
-            isLoading: false,
-            loadingText: 'Please wait while I log you in'
-          ));
+              exception: null,
+              isLoading: false,
+              loadingText: 'Please wait while I log you in'));
           emit(const AuthStateNeedsVerification(isLoading: false));
         } else {
           emit(const AuthStateLoggedOut(
@@ -82,6 +81,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           isLoading: false,
         ));
       }
+    });
+    on<AuthEventForgotPassword>((event, emit) async {
+      emit(const AuthStateForgotPassword(
+        exception: null,
+        hasSentEmail: false,
+        isLoading: false,
+      ));
+      final email = event.email;
+      if (email == null) {
+        return;
+      }
+      emit(const AuthStateForgotPassword(
+        exception: null,
+        hasSentEmail: false,
+        isLoading: true,
+      ));
+      bool? didSentEmail;
+      Exception? exception;
+      try {
+        await provider.sendPasswordResetLink(email: email);
+        didSentEmail = true;
+      } on Exception catch (e) {
+        didSentEmail = false;
+        exception = e;
+      }
+      emit(AuthStateForgotPassword(
+        exception: exception,
+        hasSentEmail: didSentEmail,
+        isLoading: false,
+      ));
     });
   }
 }

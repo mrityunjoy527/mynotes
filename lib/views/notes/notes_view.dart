@@ -47,8 +47,8 @@ class _NotesViewState extends State<NotesView> {
                 context,
               );
               if (wantLogout) {
-                final sharedPreference = await SharedPreferences.getInstance();
-                sharedPreference.remove('userEmail');
+                // final sharedPreference = await SharedPreferences.getInstance();
+                // sharedPreference.remove('userEmail');
                 context.read<AuthBloc>().add(const AuthEventLogOut());
               }
             },

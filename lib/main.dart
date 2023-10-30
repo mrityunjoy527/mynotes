@@ -6,6 +6,7 @@ import 'package:mynotes/services/auth/bloc/auth_bloc.dart';
 import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/services/auth/bloc/auth_state.dart';
 import 'package:mynotes/services/auth/firebase_auth_provider.dart';
+import 'package:mynotes/views/forgot_password_view.dart';
 import 'package:mynotes/views/login_view.dart';
 import 'package:mynotes/views/notes/create_or_update_note_view.dart';
 import 'package:mynotes/views/notes/notes_view.dart';
@@ -49,6 +50,8 @@ class HomePage extends StatelessWidget {
       },
       builder: (context, state) {
         switch (state.runtimeType) {
+          case AuthStateForgotPassword:
+            return const ForgotPassword();
           case AuthStateLoggedIn:
             return const NotesView();
           case AuthStateNeedsVerification:
