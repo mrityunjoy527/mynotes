@@ -1,8 +1,12 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'auth_user.dart';
 
 abstract class AuthProvider {
 
   Future<void> initialize();
+
+  Future<SharedPreferences> initializeSharedPreference({String? email, String? id, bool? emailVerified});
 
   AuthUser? get currentUser;
 

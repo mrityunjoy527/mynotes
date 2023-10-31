@@ -5,12 +5,24 @@ import 'package:mynotes/services/auth/auth_user.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:firebase_auth/firebase_auth.dart'
     show FirebaseAuth, FirebaseAuthException;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FirebaseAuthProvider implements AuthProvider {
   @override
   Future<void> initialize() async {
     await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
+  }
+
+  @override
+  Future<SharedPreferences> initializeSharedPreference({String? email, String? id, bool? emailVerified}) async {
+    final sharedPreference = await SharedPreferences.getInstance();
+    if(email != null) {
+      sharedPreference.setString('email', email);
+      sharedPreference.setString('id', id!);
+      sharedPreference.setBool('emailVerified', emailVerified!);
+    }
+    return sharedPreference;
   }
 
   @override
@@ -21,8 +33,6 @@ class FirebaseAuthProvider implements AuthProvider {
           .createUserWithEmailAndPassword(email: email, password: password);
       final user = currentUser;
       if (user != null) {
-        await sendEmailVerification();
-        // log('verification sent');
         return user;
       } else {
         throw UserNotLoggedInAuthException();
@@ -60,7 +70,6 @@ class FirebaseAuthProvider implements AuthProvider {
           .signInWithEmailAndPassword(email: email, password: password);
       final user = currentUser;
       if (user != null) {
-        if(!user.emailVerified) throw EmailNotVerifiedAuthException();
         return user;
       } else {
         throw UserNotLoggedInAuthException();

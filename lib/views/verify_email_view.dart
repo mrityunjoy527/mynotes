@@ -8,6 +8,7 @@ class VerifyEmailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<AuthBloc>().add(const AuthEventSendEmailVerification());
     return Scaffold(
       appBar: AppBar(
         title: const Text('Verify Your Email'),

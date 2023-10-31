@@ -1,6 +1,7 @@
 import 'package:mynotes/services/auth/auth_provider.dart';
 import 'package:mynotes/services/auth/auth_user.dart';
 import 'package:mynotes/services/auth/firebase_auth_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService implements AuthProvider {
 
@@ -8,9 +9,6 @@ class AuthService implements AuthProvider {
   const AuthService(this.provider);
 
   factory AuthService.firebase() => AuthService(FirebaseAuthProvider());
-
-  @override
-  Future<void> initialize() => provider.initialize();
 
   @override
   Future<AuthUser> createUser(
@@ -32,4 +30,11 @@ class AuthService implements AuthProvider {
 
   @override
   Future<void> sendPasswordResetLink({required String email}) => provider.sendPasswordResetLink(email: email);
+
+  @override
+  Future<SharedPreferences> initializeSharedPreference({String? email, String? id, bool? emailVerified}) =>
+      provider.initializeSharedPreference(email: email, id: id, emailVerified: emailVerified);
+
+  @override
+  Future<void> initialize() => provider.initialize();
 }
